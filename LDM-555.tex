@@ -1,0 +1,248 @@
+\documentclass[DM,toc]{lsstdoc}
+
+% We use commands to make it easy to find where parameter names and units
+% are defined in the tables, and to allow hyphenation.
+\newcommand{\paramname}[1]{\hspace{0pt}#1}
+\newcommand{\unitname}[1]{\hspace{0pt}#1}
+
+\setcounter{secnumdepth}{5}
+
+%% Retrieve date and model version
+\setDocUpstreamLocation{MagicDraw SysML}
+\setDocUpstreamVersion{20}
+
+\date{2017-06-29}
+
+%% Define the document title, authors, handle, and change record
+\input metadata.tex
+
+% Environment for displaying the parameter tables in
+% a consistent manner. No arguments as there are no
+% captions or labels.
+\newenvironment{parameters}[0]{%
+\setlength\LTleft{0pt}
+\setlength\LTright{\fill}
+\begin{small}
+\begin{longtable}[]{|p{0.49\textwidth}|l|p{0.6in}|p{1.70in}@{}|}
+
+\hline \textbf{Description} & \textbf{Value} & \textbf{Unit} & \textbf{Name} \\ \hline
+\endhead
+
+\hline \multicolumn{4}{r}{\emph{Continued on next page}} \\
+\endfoot
+
+\hline\hline
+\endlastfoot
+}{%
+\hline
+\end{longtable}
+\end{small}
+}
+
+\begin{document}
+\maketitle
+
+The key requirements driving the LSST database architecture include: incremental scaling, near-real-time response time for ad-hoc simple user queries, fast turnaround for full-sky scans/correlations, reliability, and low cost, all at multi-petabyte scale. These requirements are primarily driven by the ad-hoc user query access.
+
+Database performance requirements are specified in the DM Requirements Document (\citeds{LSE-61}).
+
+\section{General Requirements}
+
+\subsection{Reliability}
+
+\label{DM-DB-REQ-0003}
+\textbf{ID:} DM-DB-REQ-0003
+
+\textbf{Specification:}
+The system, including disaster recovery backup storage, must not lose data, and it must provide at least \textbf{dbSystemUpTime} up time in the face of hardware failures, software failures, system maintenance, and upgrades.
+
+\begin{parameters}
+Minimum uptime percentage for all database systems.
+&
+98
+&
+\unitname{%
+percent
+}
+&
+\paramname{%
+dbSystemUpTime
+} \\\hline
+\end{parameters}
+
+\subsection{New Technologies}
+
+\label{DM-DB-REQ-0002}
+\textbf{ID:} DM-DB-REQ-0002
+
+\textbf{Specification:}
+New technologies that become available during the life of the system must be able to be incorporated easily.
+
+\subsection{Incremental Scaling}
+
+\label{DM-DB-REQ-0001}
+\textbf{ID:} DM-DB-REQ-0001
+
+\textbf{Specification:}
+The system must scale to tens of petabytes and trillions of rows. It must grow as the data grows and as the access requirements grow. Database sizes are described in \citeds{LDM-141}.
+
+\section{Data Production}
+
+\subsection{Level 1 Database Public Updates}
+
+\label{DM-DB-REQ-0007}
+\textbf{ID:} DM-DB-REQ-0007
+
+\textbf{Specification:}
+The public-facing view of the L1 database must be updated within at least \textbf{L1PublicT} of the visit being observed.
+
+\begin{parameters}
+Maximum time from the acquisition of science data to the public release of associated Level 1 Data Products (except alerts)
+&
+24
+&
+\unitname{%
+hour
+}
+&
+\paramname{%
+L1PublicT
+} \\\hline
+\end{parameters}
+
+\subsection{Level 1 Schema Stability}
+
+\label{DM-DB-REQ-0008}
+\textbf{ID:} DM-DB-REQ-0008
+
+\textbf{Specification:}
+The Level 1 database shall contain the entire history of Level 1 data products. It shall be designed such that the schema can be modified during the lifetime of the survey so long as query results are not altered.
+
+\textbf{Discussion:}
+The internal database can be rebuilt when not observing.
+
+\subsection{Level 1 Database Reliability}
+
+\label{DM-DB-REQ-0004}
+\textbf{ID:} DM-DB-REQ-0004
+
+\textbf{Specification:}
+The live Level 1 Database shall be implemented such that external access shall not be disabled for extended periods of time for maintenance.
+
+\textbf{Discussion:}
+Alerts need to be generated in under a minute after data has been taken, data has to be ingested/updated in almost-real time. The number of row updates/ingested is modest: ~40K new rows and updates occur every ~39 sec.
+
+\subsection{Engineering and Facility Database}
+
+\label{DM-DB-REQ-0012}
+\textbf{ID:} DM-DB-REQ-0012
+
+\textbf{Specification:}
+The Engineering and Facility Database (EFD) shall be made available at the Archive Center in a form optimized for queries with latency less than \textbf{efdArchiveCenterLatency}.
+
+\begin{parameters}
+Maximum delay between an item appearing in the EFD and it being accessible for querying from the Archive Center.
+&
+3600
+&
+\unitname{%
+second
+}
+&
+\paramname{%
+efdArchiveCenterLatency
+} \\\hline
+\end{parameters}
+
+\subsection{Level 1 Database Performance}
+
+\label{DM-DB-REQ-0005}
+\textbf{ID:} DM-DB-REQ-0005
+
+\textbf{Specification:}
+The Alert Production system shall have access to all previous Level 1 catalog data when performing source association.
+
+\subsection{Data Release Schema Stability}
+
+\label{DM-DB-REQ-0009}
+\textbf{ID:} DM-DB-REQ-0009
+
+\textbf{Specification:}
+It shall be possible to modify the schema for a data release after the release has been made, so long as query results do not change.
+
+\textbf{Discussion:}
+Example of non-altering changes including adding/removing/resorting indexes, adding a new column with derived information, changing type of a column without loosing information, (eg., FLOAT to DOUBLE would be always allowed, DOUBLE to FLOAT would only be allowed if all values can be expressed using FLOAT without loosing any information). Each data release can have a different schema to the previous data release.
+
+\subsection{Data Release Production ingest}
+
+\label{DM-DB-REQ-0010}
+\textbf{ID:} DM-DB-REQ-0010
+
+\textbf{Specification:}
+Ingestion of Data Release catalogs into the Data Release database shall be incremental and asynchronous.
+
+\textbf{Discussion:}
+The ingestion needs to be independent of ongoing calculations in the Data Release Production, and it cannot wait until all Data Release Production calculations have completed.
+
+\subsection{Calibration Database}
+
+\label{DM-DB-REQ-0011}
+\textbf{ID:} DM-DB-REQ-0011
+
+\textbf{Specification:}
+A database shall contain queryable results from the Calibration Products Pipeline. This database shall be bitemporal, providing information on when a particular value was valid, and not solely the most recently calculated value.
+
+\subsection{Alert Database}
+
+\label{DM-DB-REQ-0006}
+\textbf{ID:} DM-DB-REQ-0006
+
+\textbf{Specification:}
+The contents of all alerts shall be maintained in a database, searchable by alert ID.
+
+\section{Query Access}
+
+\subsection{Query Complexity}
+
+\label{DM-DB-REQ-0015}
+\textbf{ID:} DM-DB-REQ-0015
+
+\textbf{Specification:}
+The system shall handle complex queries, including spatial correlations, and time series comparisons. Spatial correlations are required for the Object catalog only.
+
+\textbf{Discussion:}
+Spatial queries require highly specialized, 2-level partitioning with overlaps.
+
+\subsection{Flexibility}
+
+\label{DM-DB-REQ-0016}
+\textbf{ID:} DM-DB-REQ-0016
+
+\textbf{Specification:}
+Catalogs in relational databases shall be queried using a dialect of ADQL supporting as many features of the standard as feasible.
+
+\textbf{Discussion:}
+ADQL is a superset of SQL92, and can therefore be used to query the alert database and EFD as well as spatial catalogs. Native SQL supported by the underlying database system, with LSST-specific extensions, might also be desirable, but without the promise of longevity if the backend database technology changes during the survey lifetime.
+
+\subsection{Reproducibility}
+
+\label{DM-DB-REQ-0013}
+\textbf{ID:} DM-DB-REQ-0013
+
+\textbf{Specification:}
+It must be possible to issue queries on any Level 1 and Level 2 data products that will produce the same results when re-issued at any time before the next Data Release and when re-issued with at most minor, well-documented modifications at any time thereafter.
+
+\subsection{Cross-matching with external/user data}
+
+\label{DM-DB-REQ-0014}
+\textbf{ID:} DM-DB-REQ-0014
+
+\textbf{Specification:}
+Users shall be able to cross-match the LSST catalogs with external catalogs. Some catalogs shall be provided by LSST, whilst other catalogs can be uploaded by the user. Results from these cross-matches can be used in subsequent queries.
+
+\textbf{Discussion:}
+Example catalogs hosted by LSST will be those from SDSS, SKA or Gaia.
+
+\bibliography{lsst}
+
+\end{document}
