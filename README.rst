@@ -1,7 +1,7 @@
 .. image:: https://img.shields.io/badge/ldm--555-lsst.io-brightgreen.svg
    :target: https://ldm-555.lsst.io
-.. image:: https://travis-ci.org/lsst/LDM-555.svg
-   :target: https://travis-ci.org/lsst/LDM-555
+.. image:: https://github.com/lsst/LDM-555/workflows/CI/badge.svg
+   :target: https://github.com/lsst/LDM-555/actions/
 
 ############################
 Database System Requirements
